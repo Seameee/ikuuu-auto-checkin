@@ -123,7 +123,7 @@ async function main() {
 
   try {
     const { msg: loginMsg, cookie } = await logIn(email, passwd);
-    notificationMessages.push(`登录结果: ${loginMsg}`);
+    notificationMessages.push(`ikuuu登录: ${loginMsg}`);
 
     const checkinMsg = await checkIn(cookie);
     notificationMessages.push(`签到结果: ${checkinMsg}`);
@@ -131,8 +131,12 @@ async function main() {
     notificationMessages.push(`操作失败: ${error.message}`);
     console.error("Operation failed:", error);
   } finally {
-    const finalMessage = notificationMessages.join("\n");
-    await sendTelegramMessage(finalMessage);
+    if (process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_CHAT_ID) {
+      const finalMessage = "ikuuu签到\n" + notificationMessages.join("\n");
+      await sendTelegramMessage(finalMessage);
+    } else {
+      console.log("Skipping Telegram notification: TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID not set.");
+    }
   }
 }
 
