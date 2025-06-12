@@ -6,6 +6,7 @@ on:
     - cron: "25 0 * * *"
 
 jobs:
+
   checkin:
     name: Checkin
     runs-on: ubuntu-latest
@@ -21,7 +22,17 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: latest
-
+          
+      - name: 随机延迟执行
+        id: delay_step
+        run: |
+          # 生成 0-300 秒（0-5分钟）的随机延迟
+          DELAY=$((RANDOM % 300))
+          echo "⏰ 随机延迟 $DELAY 秒 ($(($DELAY / 60)) 分钟 $(($DELAY % 60)) 秒)"
+          echo "delay_seconds=$DELAY" >> $GITHUB_OUTPUT
+          echo "delay_type=随机延迟" >> $GITHUB_OUTPUT
+          sleep $DELAY
+          
       - name: Checkin
         shell: bash
         run: |
