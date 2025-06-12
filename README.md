@@ -8,7 +8,7 @@
 
 - **Environments**: `IKUUU`
 
-- **Secrets**:`EMAIL`, `PASSWD`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`, `HOST`（可选）
+- **Secrets**:`EMAIL`, `PASSWD`, `TELEGRAM_BOT_TOKEN`（可选）, `TELEGRAM_CHAT_ID`（可选）, `HOST`（可选）
 
 ### 使用方法
 
