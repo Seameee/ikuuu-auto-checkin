@@ -132,7 +132,7 @@ async function main() {
     console.error("Operation failed:", error);
   } finally {
     if (process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_CHAT_ID) {
-      const finalMessage = "ikuuu签到\n" + notificationMessages.join("\n");
+      const finalMessage = notificationMessages.join("\n");
       await sendTelegramMessage(finalMessage);
     } else {
       console.log("Skipping Telegram notification: TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID not set.");
