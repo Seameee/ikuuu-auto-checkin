@@ -57,41 +57,83 @@ async function logIn(email, passwd) {
 
   let responseJson = await response.json();
 
-  responseJson && console.log(responseJson.msg);
-
-  return parseCookie(rawCookie);
+  return { msg: responseJson.msg, cookie: parseCookie(rawCookie) };
 }
 
-function checkIn(cookie) {
-  fetch(checkInUrl, {
+async function checkIn(cookie) {
+  const response = await fetch(checkInUrl, {
     method: "POST",
     headers: {
       Cookie: generateCookieStr(cookie),
     },
-  })
-    .then((res) => res.json())
-    .then((resJson) => {
-      if (resJson) {
-        console.log(resJson.msg);
-      }
+  });
+  const resJson = await response.json();
+  return resJson.msg;
+}
+
+async function sendTelegramMessage(message) {
+  const botToken = process.env.TELEGRAM_BOT_TOKEN;
+  const chatId = process.env.TELEGRAM_CHAT_ID;
+
+  if (!botToken || !chatId) {
+    console.error("Telegram bot token or chat ID not found in environment variables.");
+    return;
+  }
+
+  const telegramApiUrl = `https://api.telegram.org/bot${botToken}/sendMessage`;
+  const params = new URLSearchParams({
+    chat_id: chatId,
+    text: message,
+    parse_mode: 'Markdown',
+  });
+
+  try {
+    const response = await fetch(telegramApiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: params.toString(),
     });
+
+    const data = await response.json();
+    if (data.ok) {
+      console.log("Telegram notification sent successfully.");
+    } else {
+      console.error("Failed to send Telegram notification:", data.description);
+    }
+  } catch (error) {
+    console.error("Error sending Telegram notification:", error);
+  }
 }
 
 async function main() {
   let email;
   let passwd;
+  let notificationMessages = [];
 
   if (process.env.EMAIL && process.env.PASSWD) {
     email = process.env.EMAIL;
     passwd = process.env.PASSWD;
   } else {
+    notificationMessages.push("ENV ERROR: EMAIL or PASSWD not set.");
     console.log("ENV ERROR");
     process.exit(1);
   }
 
-  let cookie = await logIn(email, passwd);
+  try {
+    const { msg: loginMsg, cookie } = await logIn(email, passwd);
+    notificationMessages.push(`登录结果: ${loginMsg}`);
 
-  checkIn(cookie);
+    const checkinMsg = await checkIn(cookie);
+    notificationMessages.push(`签到结果: ${checkinMsg}`);
+  } catch (error) {
+    notificationMessages.push(`操作失败: ${error.message}`);
+    console.error("Operation failed:", error);
+  } finally {
+    const finalMessage = notificationMessages.join("\n");
+    await sendTelegramMessage(finalMessage);
+  }
 }
 
 main();
